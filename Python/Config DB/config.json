@@ -1,0 +1,6 @@
+{
+    "dbname": "etl_projects",
+    "user": "postgres",
+    "password": "Pirlogeanu91#",
+    "host": "localhost"
+}
