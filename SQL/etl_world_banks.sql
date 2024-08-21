@@ -1,23 +1,23 @@
 --*************************************************************************************************	World Bank Data
  --| Create Table
 
-CREATE TABLE IF NOT EXISTS etl.world_bank_data ( world_bank_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS etl.world_bank_data (world_bank_id SERIAL PRIMARY KEY,
 																																																	bank_name TEXT, market_cap_usd FLOAT, last_modified_date DATE, batch_id TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 																																																	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 																																																	active BOOLEAN DEFAULT TRUE);
 
 --| Create Table Logs Counting
 
-CREATE TABLE IF NOT EXISTS etl.log_counts ( id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS etl.log_counts (id SERIAL PRIMARY KEY,
 																																												table_name TEXT, -- To differentiate between different tables' counts
- no_update_count INT DEFAULT 0,
+no_update_count INT DEFAULT 0,
 																																												update_count INT DEFAULT 0,
 																																												new_inserts_count INT DEFAULT 0,
 																																												batch_id TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 --| Create Procedure & Body
 
-CREATE OR REPLACE PROCEDURE etl.insert_or_update_world_bank_data ( p_bank_name TEXT, p_market_cap_usd FLOAT, p_last_modified_date DATE, p_batch_id TEXT) LANGUAGE plpgsql AS $$
+CREATE OR REPLACE PROCEDURE etl.insert_or_update_world_bank_data (p_bank_name TEXT, p_market_cap_usd FLOAT, p_last_modified_date DATE, p_batch_id TEXT) LANGUAGE plpgsql AS $$
 
 BEGIN
 
@@ -124,6 +124,7 @@ $$;
 --| Procedure Deactivate Old Bank Records
 
 CREATE OR REPLACE PROCEDURE etl.deactivate_bank_records(p_batch_id TEXT) LANGUAGE plpgsql AS $$
+
 BEGIN
 	UPDATE etl.world_bank_data
 	SET active = FALSE,
@@ -144,6 +145,7 @@ DROP PROCEDURE etl.insert_or_update_world_bank_data_summary;
 
 
 CREATE OR REPLACE PROCEDURE etl.insert_or_update_world_bank_data_summary(p_batch_id TEXT) LANGUAGE plpgsql AS $$
+
 DECLARE
 	v_no_update_count INT;
 	v_update_count INT;
@@ -177,13 +179,14 @@ $$;
 --*************************************************************************************************	Exchange Rates
  --| Create Table
 
-CREATE TABLE IF NOT EXISTS etl.exchanges_rates ( exchange_rate_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS etl.exchanges_rates (exchange_rate_id SERIAL PRIMARY KEY,
 																																																	country TEXT, currency TEXT, exchange_rate FLOAT, year DATE, batch_id TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 																																																	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 --| Create Procedure & Body
 
-CREATE OR REPLACE PROCEDURE etl.insert_or_update_exchange_rates ( p_country TEXT, p_currency TEXT, p_exchange_rate FLOAT, p_year DATE, p_batch_id TEXT) LANGUAGE plpgsql AS $$
+CREATE OR REPLACE PROCEDURE etl.insert_or_update_exchange_rates (p_country TEXT, p_currency TEXT, p_exchange_rate FLOAT, p_year DATE, p_batch_id TEXT) LANGUAGE plpgsql AS $$
+
 BEGIN
 	IF EXISTS (SELECT 1 FROM etl.exchanges_rates
 			   WHERE country = p_country
@@ -250,6 +253,7 @@ DROP PROCEDURE etl.insert_or_update_exchange_rate_data_summary;
 
 
 CREATE OR REPLACE PROCEDURE etl.insert_or_update_exchange_rate_data_summary(p_batch_id TEXT) LANGUAGE plpgsql AS $$
+
 DECLARE
 	v_no_update_count INT;
 	v_update_count INT;
@@ -284,13 +288,13 @@ $$;
 --*************************************************************************************************	Log Table
  --| Create Table
 
-CREATE TABLE IF NOT EXISTS etl.process_logs ( log_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS etl.process_logs (log_id SERIAL PRIMARY KEY,
 																																														log_phase TEXT, message TEXT, datetime TIMESTAMP,
 																																														batch_id TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 --| Create Procedure & Body
 
-CREATE OR REPLACE PROCEDURE etl.insert_log ( p_log_phase TEXT, p_message TEXT, p_log_datetime TIMESTAMP, p_batch_id TEXT) LANGUAGE plpgsql AS $$
+CREATE OR REPLACE PROCEDURE etl.insert_log (p_log_phase TEXT, p_message TEXT, p_log_datetime TIMESTAMP, p_batch_id TEXT) LANGUAGE plpgsql AS $$
 BEGIN
 	INSERT INTO etl.process_logs (
 		log_phase,
